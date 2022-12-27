@@ -7,11 +7,24 @@ import { useStateValue } from "../context/StateProvider";
 import { actionType } from "../context/reducer";
 import EmptyCart from "../img/emptyCart.svg";
 import CartItem from "./CartItem";
+// import { storage } from "../firebase.config";
+// import { getAllFoodItems, saveItem } from "../utils/firebaseFunctions";
+// import { categories } from "../utils/data";
+import { useNavigate } from "react-router-dom";
+import { saveCheckOut } from "../utils/firebaseFunctions";
+import { toast } from "react-toastify";
 
 const CartContainer = () => {
   const [{ cartShow, cartItems, user }, dispatch] = useStateValue();
   const [flag, setFlag] = useState(1);
   const [tot, setTot] = useState(0);
+  const [title, setTitle] = useState("");
+  const [calories, setCalories] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const showCart = () => {
     dispatch({
@@ -35,6 +48,33 @@ const CartContainer = () => {
     });
 
     localStorage.setItem("cartItems", JSON.stringify([]));
+  };
+
+  const checkOut = () => {
+    let localData = cartItems;
+    // console.log(localData);
+    var data = {
+      id: `${Date.now()}`,
+      title: new Array(),
+      qty: new Array(),
+      price: tot + 2.5,
+    };
+
+    for (var i = 0; i <= localData.length; i++) {
+      if (localData[i]?.title) {
+        data["title"].push(localData[i].title);
+      }
+      if (localData[i]?.qty) {
+        data.qty.push(localData[i].qty);
+      }
+    }
+    console.log(data);
+    saveCheckOut(data);
+
+    setIsLoading(false);
+
+    // console.log(data);
+    // console.log(cartItems.length);
   };
 
   return (
@@ -102,6 +142,7 @@ const CartContainer = () => {
                 whileTap={{ scale: 0.8 }}
                 type="button"
                 className="w-full p-2 rounded-full bg-gradient-to-tr from-orange-400 to-orange-600 text-gray-50 text-lg my-2 hover:shadow-lg"
+                onClick={checkOut}
               >
                 Check Out
               </motion.button>
